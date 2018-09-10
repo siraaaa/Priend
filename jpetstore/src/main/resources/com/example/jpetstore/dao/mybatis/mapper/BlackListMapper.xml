@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.example.jpetstore.dao.mybatis.mapper.BlackListMapper">
+
+  <cache />
+  
+  <select id="getDetail" resultType="BlackList">
+    SELECT
+      BLACKID AS username,
+      PAGE,
+      MAX(TO_CHAR(DATETIME,'YYYYMMDD')) AS datetime
+    FROM (SELECT * FROM COMPLAIN WHERE BLACKID = #{username})
+	GROUP BY BLACKID, PAGE
+	<![CDATA[HAVING COUNT(PAGE)>10]]>
+	
+  </select>
+  
+  <delete id="removeDetail">
+  	DELETE FROM COMPLAIN
+  	WHERE BLACKID = #{param1}
+  </delete>
+  
+  <!-- 이유 보기 만들기, 파마리터:page, result: 이유들 -->
+  <select id="getReasonByUsername" resultType="BlackList">
+  	SELECT
+  	  PAGE,
+  	  BLACKREASON AS reason
+  	FROM COMPLAIN
+  	WHERE BLACKID = #{username}
+  	ORDER BY BLACKREASON
+  </select>
+  <!-- 시라씨 부분 -->
+  <select id="getBlack" resultType="BlackList">
+  SELECT
+      COMPLAIN_ID,
+      BLACKID,
+      BLACKREASON,
+      PAGE,
+      DATETIME,
+      COMPLAINANT
+    FROM COMPLAIN
+    WHERE BLACKID = #{blackId}
+  </select>
+  
+  <insert id="insertBlackList" parameterType="BlackList">
+    INSERT INTO COMPLAIN (COMPLAIN_ID, BLACKID, BLACKREASON, PAGE, DATETIME, COMPLAINANT)
+    VALUES (SEQ_BLACKLIST.NEXTVAL, #{blackId}, #{blackReason}, #{page}, #{dateTime, jdbcType=VARCHAR}, #{complainant})
+  </insert>
+  <!-- 여기까지 -->
+</mapper>
